@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+	<meta charset="utf-8">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+        <title>Hari's light control</title>
+        <link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet">
+        
+    </head>
+    
+    <body>
+        <center>
+            <h1 onclick="headerTap()">Light Control</h1>
+            <br>
+            <div class="btnContainer">
+            <button class="presets red" onclick="red()">Red</button>
+            <button class="presets green" onclick="green()">Green</button>
+            <button class="presets blue" onclick="blue()">Blue</button>
+	</div>
+	<br>
+	<div class="btnContainer">
+	<button class="presets on" onclick="white()">White</button>
+	<button class="presets warm" onclick="warm()">Warm White</button>
+            </div>
+            <br>
+            <div class="btnContainer">
+            <button class="presets off" onclick="off()">Off</button>
+            <button class="presets on" onclick="on()">On</button>
+            </div>
+	<br>
+	<div class="container sliderCont">
+    <h2 class="containerHeading">RGB Brightness Control</h2>
+	<form method="POST" action="brightness" class="form-signin" role="form">
+        <input type="range" min="0" max="255" value="0" name="brightnessSlide" id="brightnessSlide" class="slider brightSlide" onchange="sendColorsAjax()" /> </br>
+		<input type="range" min="0" max="255" value="0" name="redSlide" id="redSlide" class="slider redSlide" onchange="sendColorsAjax()"> </br>
+		<input type="range" min="0" max="255" value="0" name="greenSlide" id="greenSlide" class="slider greenSlide" onchange="sendColorsAjax()"> </br>
+		<input type="range" min="0" max="255" value="0" name="blueSlide" id="blueSlide" class="slider blueSlide" onchange="sendColorsAjax()"> </br>
+		
+        <!-- <button type="button" class="formButton" onclick="sendColorsAjax()">Change Color</button> </br> -->
+        </form>
+	</div>
+
+    <div class="container savedCont">
+        <h2 class="containerHeading">Saved Colors</h2>
+        <button type="colorSave" class="saved s1" id="s1" onclick="highlight('s1')"></button>
+        <button type="colorSave" class="saved s2" id="s2" onclick="highlight('s2')"></button>
+        <button type="colorSave" class="saved s3" id="s3" onclick="highlight('s3')"></button>
+        <button type="colorSave" class="saved s4" id="s4" onclick="highlight('s4')"></button>
+        <button type="colorSave" class="saved s5" id="s5" onclick="highlight('s5')"></button> <br>
+        <button type="saveButton" class="formButton disabled" style="margin-top: 10px;" onclick="saveColors()" id="saveButton" disabled>Save Current Color from Slider</button>
+        <button type="changeColor" class="formButton disabled" style="margin-top: 10px;" onclick="setSavedColor()" id="loadButton" disabled>Change to selected color</button>
+    </div>
+
+
+        </center>
+    </body>
+
+<script>
+    var confOn = false;
+    
+    var brightSlide = document.getElementById("brightnessSlide");
+    var redSlide = document.getElementById("redSlide");
+    var greenSlide = document.getElementById("greenSlide");
+    var blueSlide = document.getElementById("blueSlide");
+
+    
+    var s1 = document.getElementById("s1");
+    var s2 = document.getElementById("s2");
+    var s3 = document.getElementById("s3");
+    var s4 = document.getElementById("s4");
+    var s5 = document.getElementById("s5");
+    var select = "none";
+
+    var saveFileText = null;
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.open("GET", "/getfile", false);
+    xmlhttp.send();
+    if (xmlhttp.status==200) {
+        result = xmlhttp.responseText;
+    } else {
+        //console.log(xmlhttp.responseText);
+        //alert("Could not load save file. Sorry Hari :(");
+        result = xmlhttp.responseText;
+        
+    }
+    console.log(result);
+    slashloc = result.indexOf(")");
+    s1.style.backgroundColor = result.substring(0, slashloc+1);
+    result = result.substring(slashloc+1);
+    console.log(result);
+    slashloc = result.indexOf(")");
+    s2.style.backgroundColor = result.substring(0, slashloc+1);
+    result = result.substring(slashloc+1);
+    console.log(result);
+    slashloc = result.indexOf(")");
+    s3.style.backgroundColor = result.substring(0, slashloc+1);
+    result = result.substring(slashloc+1);
+    console.log(result);
+    slashloc = result.indexOf(")");
+    s4.style.backgroundColor = result.substring(0, slashloc+1);
+    result = result.substring(slashloc+1);
+    console.log(result);
+    slashloc = result.indexOf(")");
+    s5.style.backgroundColor = result.substring(0, slashloc+1);
+    result = result.substring(slashloc+1);
+    console.log(result);
+    
+    getcurrentcolor();
+    
+    
+    
+    
+function getcurrentcolor() {
+    console.log("Getting current Color");
+    var xmlgetColor = new XMLHttpRequest();
+    var newRes;
+    xmlgetColor.open("GET", "/getCurrentBright", false);
+    xmlgetColor.send();
+    if (xmlgetColor.status==200) {
+        result = xmlgetColor.responseText;
+        console.log(result);
+        brightSlide.value = parseInt(result, 10);
+    } else {
+        result = xmlgetColor.responseText;
+        console.log("Error");
+    }
+    
+    var xmlGetRed = new XMLHttpRequest();
+    xmlGetRed.open("GET", "/getCurrentRed", false);
+    xmlGetRed.send();
+    if (xmlGetRed.status==200) {
+        result = xmlGetRed.responseText;
+        console.log(result);
+        redSlide.value =  parseInt(result, 10);
+    } else {
+        result = xmlGetRed.responseText;
+        console.log("Error");
+    }
+    
+    var xmlGetGreen = new XMLHttpRequest();
+    xmlGetGreen.open("GET", "/getCurrentGreen", false);
+    xmlGetGreen.send();
+    if (xmlGetGreen.status==200) {
+        result = xmlGetGreen.responseText;
+        console.log(result);
+        greenSlide.value =  parseInt(result, 10);
+    } else {
+        result = xmlGetGreen.responseText;
+        console.log("Error");
+    }
+    
+    var xmlGetBlue = new XMLHttpRequest();
+    xmlGetBlue.open("GET", "/getCurrentBlue", false);
+    xmlGetBlue.send();
+    if (xmlGetBlue.status==200) {
+        result = xmlGetBlue.responseText;
+        console.log(result);
+        blueSlide.value =  parseInt(result, 10);
+    } else {
+        result = xmlGetBlue.responseText;
+        console.log("Error");
+    }
+    //console.log("Response: " + result);
+    //slashloc = result.indexOf("/");
+    //brightSlide.value =(result.substring(0, slashloc));
+    //result = result.substring(slashloc);
+    //console.log(brightSlide.value);
+    //slashloc = result.indexOf("/");
+    //redSlide.value= result.substring(0, slashloc);
+    //result = result.substring(slashloc+1);
+    //console.log(redSlide.value);
+    //slashloc = result.indexOf("/");
+    //greenSlide.value= result.substring(0, slashloc);
+    //result = result.substring(slashloc+1);
+    //console.log(greenSlide.value);
+    //blueSlide.value= result;
+    //console.log(blueSlide.value);
+    
+    
+    
+}
+    
+    
+function sendColorsAjax() {
+        console.log("Sending started...");
+		var bright = $('#brightnessSlide').value;
+		var r = $('#redSlide').value;
+		var g = $('#greenSlide').value;
+		var b = $('#blueSlide').value;
+		$.ajax({
+			type: "POST",
+			url: '/setColors',
+			data: $('form').serialize(),
+			success: function(response){
+				console.log(response);
+                getcurrentcolor();
+			},
+			error: function(error){
+				console.log(error);
+			}
+		});
+    //getcurrentcolor();
+}    
+    
+function red() {
+    var value = "rgb(255, 0, 0)"
+    $.ajax({
+        type:"GET",
+        url: '/setSavedColor',
+        data: {value: value},
+        success: function(response){
+            console.log(response);
+            getcurrentcolor();
+        },
+        error: function(error){
+            console.log(error);
+        }
+    });
+    //getcurrentcolor();
+}
+    
+function green() {
+    var value = "rgb(0, 255, 0)"
+    $.ajax({
+        type:"GET",
+        url: '/setSavedColor',
+        data: {value: value},
+        success: function(response){
+            console.log(response);
+            getcurrentcolor();
+        },
+        error: function(error){
+            console.log(error);
+        }
+    });
+    //getcurrentcolor();
+}
+    
+function blue() {
+    var value = "rgb(0, 0, 255)"
+    $.ajax({
+        type:"GET",
+        url: '/setSavedColor',
+        data: {value: value},
+        success: function(response){
+            console.log(response);
+            getcurrentcolor();
+        },
+        error: function(error){
+            console.log(error);
+        }
+    });
+    //getcurrentcolor();
+}
+    
+function white() {
+    var value = "rgb(255, 255, 255)"
+    $.ajax({
+        type:"GET",
+        url: '/setSavedColor',
+        data: {value: value},
+        success: function(response){
+            console.log(response);
+            getcurrentcolor();
+        },
+        error: function(error){
+            console.log(error);
+        }
+    });
+    //getcurrentcolor();
+}
+    
+function warm() {
+    var value = "warm"
+    $.ajax({
+        type:"GET",
+        url: '/warmWhite',
+        data: {value: value},
+        success: function(response){
+            console.log(response);
+            getcurrentcolor();
+        },
+        error: function(error){
+            console.log(error);
+        }
+    });
+    //getcurrentcolor();
+}
+    
+function off() {
+    var value = "off"
+    $.ajax({
+        type:"GET",
+        url: '/off',
+        data: {value: value},
+        success: function(response){
+            console.log(response);
+            getcurrentcolor();
+        },
+        error: function(error){
+            console.log(error);
+        }
+    });
+    //getcurrentcolor();
+}
+    
+function on() {
+    var value = "on"
+    $.ajax({
+        type:"GET",
+        url: '/on',
+        data: {value: value},
+        success: function(response){
+            console.log(response);
+            getcurrentcolor();
+        },
+        error: function(error){
+            console.log(error);
+        }
+    });
+    //getcurrentcolor();
+}
+    
+    //xcstvjymnvuyrhctgbrfvcthmjv6utyjhtgbvfgnuyhkmbhn j,8oikujmynhrthnt   utjmryhtbetjuv6uikb86ijyrhfc4eygc46vybjv86iuj5nhy4gertfg4ctynv5ujmc564ytbtrgb5yjmb7ikujyhnb4thnvi7kmbv6uyhnbvrythyjbv8i,nb76uyhtgetynvyjnyrthn56uj
+    
+    
+function setSavedColor() {
+    var selection = document.getElementById(select);
+    
+    selectStyle = window.getComputedStyle(selection, "");
+    
+    var value = selectStyle.getPropertyValue("background-color");
+    console.log(value);
+    $.ajax({
+        type: "GET",
+        url: '/setSavedColor',
+        data: {value: value},
+        success: function(response){
+            console.log(response);
+            getcurrentcolor();
+        },
+        error: function(error){
+            console.log(error);
+        }
+    });
+    //getcurrentcolor();
+    
+}
+
+    
+function saveColors() {
+    
+    
+    console.log("SaveColor() started.");
+
+    
+    var red = document.getElementById("redSlide").value;
+    var green = document.getElementById("greenSlide").value;
+    var blue = document.getElementById("blueSlide").value;
+    var bright = document.getElementById("brightnessSlide").value;
+    //console.log(red, green, blue, bright);
+    //console.log(s1.style.backgroundColor);
+    if (select != "none") {
+        sel = document.getElementById(select);
+        sel.style.backgroundColor = "rgb(" + ((red/255)*bright) + ", " + ((green/255)*bright) +", " + ((blue/255)*bright) + ")";
+    }
+    style1 = window.getComputedStyle(s1, "");
+    style2 = window.getComputedStyle(s2, "");
+    style3 = window.getComputedStyle(s3, "");
+    style4 = window.getComputedStyle(s4, "");
+    style5 = window.getComputedStyle(s5, "");
+    
+    var col1 = style1.getPropertyValue("background-color");
+    var col2 = style2.getPropertyValue("background-color");
+    var col3 = style3.getPropertyValue("background-color");
+    var col4 = style4.getPropertyValue("background-color");
+    var col5 = style5.getPropertyValue("background-color");
+    var send = col1;
+    send += col2;
+    send += col3;
+    send += col4;
+    send += col5;
+    console.log("send");
+    console.log(send);
+    
+    $.ajax({
+        type: "GET",
+        url: "/savefile",
+        data: {send: send},
+        success: function(rec) {
+            console.log(rec)
+        },
+        error: function(error){
+            console.log(error);
+        }
+    });
+    
+}
+    
+function highlight(sx) {
+    //console.log(sx);
+    if (select == "none") {
+        document.getElementById("saveButton").classList.remove("disabled");
+        document.getElementById("saveButton").disabled = false;
+        document.getElementById("loadButton").classList.remove("disabled");
+        document.getElementById("loadButton").disabled = false;
+    }
+    
+    if (select != "none") {
+        document.getElementById(select).style.border = "1px solid black";
+    }
+    
+    s = document.getElementById(sx);
+    s.style.border = "3px solid black";
+    select = sx;
+}
+    
+var confOn = false;
+    
+function headerTap(){
+    if (!confOn) {
+        document.body.style.backgroundImage = "url('https://i.pinimg.com/originals/e5/83/3e/e5833e1bea7d379f0f4e4ae250b7cf81.gif')";
+        alert("I love you more :)");
+        confOn = true;
+    } else if (confOn) {
+        document.body.style.backgroundImage = "none";
+        confOn = false;
+    }
+}
+
+</script>
+<style>
+    body {
+    font-family: 'Raleway', sans-serif;
+}
+
+
+
+    
+    
+.presets {
+    background-color: #494949;
+    border-radius: 30px;
+    padding: 20px;
+    padding-left: 40px;
+    padding-right: 40px;
+    margin-top: 10px;
+    text-decoration: none;
+    color: white;
+    font-size: 30px;
+}
+    
+.btnContainer {
+    padding: 0px;
+}
+    
+br{
+    height: 5px;
+}
+
+.red {
+    border: 5px solid red;
+    -webkit-transition: .2s;
+    transition: border .2s background-color .2s color .2s;
+}
+
+.red:hover {
+    border: 5px solid #494949;
+    background-color: red;
+    color: black;
+}
+
+.green {
+    border: 5px solid green;
+    -webkit-transition: .2s;
+    transition: border .2s background-color .2s color .2s;
+}
+
+.green:hover {
+    border: 5px solid #494949;
+    background-color: green;
+    color: black;
+}
+
+.blue {
+    border: 5px solid blue;
+    -webkit-transition: .2s;
+    transition: border .2s background-color .2s color .2s;
+}
+
+.blue:hover {
+    border: 5px solid #494949;
+    background-color: blue;
+    color: black;
+}
+
+.off {
+    border: 5px solid black;
+    -webkit-transition: .2s;
+    transition: border .2s background-color .2s color .2s;
+}
+
+.off:hover {
+    border: 5px solid white;
+    background-color: black;
+    color: white;
+}
+
+.on {
+    border: 5px solid white;
+    -webkit-transition: .2s;
+    transition: border .2s background-color .2s color .2s;
+}
+
+.on:hover {
+    border: 5px solid black;
+    background-color: white;
+    color: black;
+}
+
+.warm {
+    border: 5px solid #fffee8;
+    -webkit-transition: .2s;
+    transition: border .2s background-color .2s color .2s;
+}
+
+.warm:hover {
+border: 5px solid #494949;
+background-color: #fffee8;
+color: black;
+}
+    
+.slider{
+    -webkit-appearance: none;
+    appearance: none;
+    width: 300px;
+    height: 15px;
+    border-radius: 50px;
+    background: #d3d3d3;
+    outline: none;
+    opacity: 0.7;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+    margin: 10px;
+}    
+    
+.slider:hover{
+    opacity: 1;    
+}
+    
+.slider::-webkit-slider-thumb{
+    -webkit-appearance: none;
+    appearance: none;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+    
+.brightSlide::-webkit-slider-thumb{
+    background: black;
+}
+    
+.redSlide::-webkit-slider-thumb{
+    background: #DB4437;
+}
+    
+.greenSlide::-webkit-slider-thumb{
+    background: #1DB954;
+}
+    
+.blueSlide::-webkit-slider-thumb{
+    background: #3C5A99;
+}
+    
+    
+div {
+    padding: 18px;
+}
+   
+    
+
+    
+.container{
+    border: 1px solid black;
+    border-radius: 50px;
+    width: 50%;
+    padding: 5px;
+    padding-bottom: 10px;
+}
+    
+.containerHeading{
+    margin: 5px;
+}
+    
+.formButton{
+    background-color: #494949;
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    opacity: .7;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+    border-radius: 15px;
+}
+    
+.formButton:hover{
+    opacity: 1;
+    border-radius: 15px;
+}
+    
+.saved{
+    border: 1px solid black;
+    width: 25px;
+    height: 25px;
+    background-color: #eeeeee;
+    vertical-align:middle;
+    border-radius: 50%;
+}    
+
+.savedCont{
+    margin-top: 10px;
+}
+    
+.disabled{
+    background-color: #222222;
+    color: #494949;
+    -webkit-transition: none;
+    transition: none;
+}
+    
+.disabled:hover{
+    opacity: .7;
+}
+    </style>
+
+</html>
+
