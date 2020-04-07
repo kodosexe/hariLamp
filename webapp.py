@@ -240,6 +240,15 @@ def getcurrentcolor():
     checkButton()
     return message
 
+@app.route("/currentcolor", methods=["GET", "POST"])
+def getcurrentcolor():
+
+    #message = f1[0] + "/" + f1[1] + "/" + f1[2] + "/" + f1[3]
+    message = "rgb(" + r + "," + g + "," + b + ")"
+    print("Message: " + message)
+    checkButton()
+    return message
+
 
 @app.route("/getCurrentBright", methods=["GET", "POST"])
 def getCurrentBright():
