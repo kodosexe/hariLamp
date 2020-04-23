@@ -241,10 +241,11 @@ def getcurrentcolor():
     return message
 
 @app.route("/currentcolor", methods=["GET", "POST"])
-def getcurrentcolor():
-
+def currentcolor():
+    f = open("color.txt", "r")
+    f1 = f.readlines()
     #message = f1[0] + "/" + f1[1] + "/" + f1[2] + "/" + f1[3]
-    message = "rgb(" + r + "," + g + "," + b + ")"
+    message = "rgb(" + f1[1] + "," + f1[2] + "," + f1[3] + ")"
     print("Message: " + message)
     checkButton()
     return message
